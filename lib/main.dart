@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
+
 import 'places.dart';
 
 void main() => runApp(new MyApp());
@@ -29,6 +31,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Place> _places = <Place>[];
+  Map<String,double> _currentLocation;
 
   @override
   void initState() {
@@ -42,6 +45,15 @@ class _MyHomePageState extends State<MyHomePage> {
       stream.listen((place) => setState(() => _places.add(place)) );
     }
 
+    _getCurrentLocation() async{
+      Location _location = new Location();
+
+      _currentLocation = await _location.getLocation;
+      
+      var stream = await getPlaces(_currentLocation['latitude'],_currentLocation['longitude']);
+       _places.clear();
+      stream.listen((place) => setState(() => _places.add(place)) );
+    }
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -52,7 +64,12 @@ class _MyHomePageState extends State<MyHomePage> {
         child: new ListView(
           children: _places.map((place) => new PlaceWidget(place)).toList(),
         )
-      )
+      ),
+      floatingActionButton: new FloatingActionButton(
+         onPressed: _getCurrentLocation,
+         tooltip: 'Get current Location',
+         child: new Icon(Icons.add_location),
+      ),
     );
   }
 }
